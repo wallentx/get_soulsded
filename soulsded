@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+INPUT=$1
+OUTPUT=$2
+SCRIPT_PATH=$(dirname "$0")
+TMP_FRAME_IMG=$(mktemp /tmp/tmp_frame_imgXXXXXXXXXX.png)
+TMP_FRAME_VID=$(mktemp /tmp/tmp_frame_vidXXXXXXXXXX.mp4)
+TMP_COMBINED=$(mktemp /tmp/tmp_combinedXXXXXXXXXX.mp4)
+
+convert "$INPUT" -resize 1449x815 -background black -gravity center -extent 1449x815 "$TMP_FRAME_IMG"
+ffmpeg -hide_banner -loglevel panic -nostats -y -hwaccel auto -loop 1 -i "$TMP_FRAME_IMG" -t 10 "$TMP_FRAME_VID"
+ffmpeg -hide_banner -loglevel panic -nostats -y -hwaccel auto -i "$TMP_FRAME_VID" -i "$SCRIPT_PATH"/you-died.mp4 -filter_complex "xfade=transition=fadegrays:duration=5:offset=5" "$TMP_COMBINED"
+ffmpeg -hide_banner -loglevel panic -nostats -y -hwaccel auto -i "$TMP_COMBINED" "$OUTPUT"
+
+rm "$TMP_FRAME_IMG" "$TMP_FRAME_VID" "$TMP_COMBINED"
